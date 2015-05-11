@@ -21,7 +21,10 @@ subject$date <- as.Date(subject$date)
 ```{r}
 total.steps.day <- tapply(subject$steps, subject$date, sum, na.rm = T)
 
-barplot(total.steps.day)
+hist(total.steps.day, breaks = 10,
+     xlab = 'Steps per Day', ylab = 'No. of Day(s)',
+     labels = T,
+     col = 'grey90')
 
 mean(total.steps.day)
 
