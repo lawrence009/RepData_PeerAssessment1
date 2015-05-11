@@ -7,19 +7,48 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r}
+if (!exists('subject')) {
+    subject <- read.csv('activity.csv')
+}
+subject$time <- strptime(paste(subject$date, sprintf('%04d', subject$interval)),
+                         '%F %H%M')
+subject$date <- as.Date(subject$date)
+```
 
 
 ## What is mean total number of steps taken per day?
+```{r}
+total.steps.day <- tapply(subject$steps, subject$date, sum, na.rm = T)
 
+barplot(total.steps.day)
+
+mean(total.steps.day)
+
+median(total.steps.day)
+```
 
 
 ## What is the average daily activity pattern?
+```{r}
+mean.steps.interval <- tapply(subject$steps, subject$interval, mean, na.rm = T)
+max.mean.steps.interval <- max(mean.steps.interval)
 
+plot(mean.steps.interval, type = 'l')
+
+names(mean.steps.interval[mean.steps.interval == max.mean.steps.interval])
+```
 
 
 ## Imputing missing values
+```{r}
+#number of missing value by date
+num.na.date <- tapply(subject$steps, subject$date, function(x) {length(which(is.na(x)))} )
 
+length(which(is.na(subject)))
+sum(num.na.date)
+
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?

@@ -1,0 +1,14 @@
+#############
+## R Studio
+#############
+.Rproj.user
+.RData
+.Rhistory
+
+
+#############
+## Specific to this repo
+#############
+*.pdf
+*.zip
+*.csv
