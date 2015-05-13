@@ -12,9 +12,12 @@ print(paste('range:', range(subject$steps, na.rm = T)))
 str(subject)
 
 total.steps.day <- tapply(subject$steps, subject$date, sum, na.rm = T)
-mean.steps.day <- mean(total.steps.day)
-median.steps.day <- mean(total.steps.day)
 
 mean.steps.interval <- tapply(subject$steps, subject$interval, mean, na.rm = T)
 
 length(which(is.na(subject$steps)))
+
+
+wknds <- which(subject$time$wday == 0 | #Sunday
+               subject$time$wday == 6)  #Saturday
+
