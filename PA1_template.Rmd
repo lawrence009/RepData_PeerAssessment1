@@ -7,21 +7,29 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r}
-if (!exists('subject')) {
-    subject <- read.csv('activity.csv')
-}
-subject$time <- strptime(paste(subject$date, sprintf('%04d', subject$interval)),
-                         '%F %H%M')
-subject$date <- as.Date(subject$date)
+```{r load, cache=TRUE}
+subject <- read.csv('activity.csv')
+    
+subject$datetime <- strptime(paste(subject$date, sprintf('%04d', subject$interval)),
+                             '%F %H%M')
+subject$date     <- as.Date(subject$date)
+subject$interval <- as.factor(subject$interval)
+
+#total number of steps per day
+total.steps.day <- tapply(subject$steps, subject$date, sum, na.rm = T)
+
+#avg number of steps per 5-minute interval
+avg.steps.interval <- tapply(subject$steps, subject$interval, mean, na.rm = T)
 ```
 
 
 ## What is mean total number of steps taken per day?
 ```{r}
-total.steps.day <- tapply(subject$steps, subject$date, sum, na.rm = T)
+par(mar = c(4, 4, 2, 0) + 0.1,
+    cex = 0.8)
 
 hist(total.steps.day, breaks = 10,
+     main = 'Histogram of Steps Taken per Day',
      xlab = 'Steps per Day', ylab = 'No. of Day(s)',
      labels = T,
      col = 'grey90')
@@ -34,12 +42,15 @@ median(total.steps.day)
 
 ## What is the average daily activity pattern?
 ```{r}
-mean.steps.interval <- tapply(subject$steps, subject$interval, mean, na.rm = T)
-max.mean.steps.interval <- max(mean.steps.interval)
+plot(x = seq(from = 0, by = 5, length.out = 288),
+     y = avg.steps.interval,
+     type = 'l',
+     main = 'Average Daily Acitivity Pattern over Two Months',
+     xlab = 'Elapsed Time (minutes) per Day',
+     ylab = 'Avg. Step per 5-minute Interval')
 
-plot(mean.steps.interval, type = 'l')
-
-names(mean.steps.interval[mean.steps.interval == max.mean.steps.interval])
+peak.interval <- max(mean.steps.interval)
+names(avg.steps.interval[avg.steps.interval == peak.interval])
 ```
 
 
@@ -55,3 +66,5 @@ sum(num.na.date)
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+```
