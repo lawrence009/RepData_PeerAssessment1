@@ -37,6 +37,9 @@ t.subject$wknd <- factor(t.subject$wknd, levels = c(T, F), labels = c('weekend',
 df <- aggregate(t.subject$steps, by = list(t.subject$interval, t.subject$wknd), mean)
 colnames(df) <- c('interval', 'wkd', 'avg.steps')
 df$time <- seq(from = 0, by = 5, length.out = 288)
+
+
+library(lattice)
 xyplot(avg.steps ~ time | wkd, data = df, type = 'l', layout = c(1, 2))
 
 
