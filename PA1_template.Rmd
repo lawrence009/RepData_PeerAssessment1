@@ -1,5 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "lawrence009"
 output: 
   html_document:
     keep_md: true
@@ -15,6 +16,18 @@ subject$datetime <- strptime(paste(subject$date, sprintf('%04d', subject$interva
 subject$date     <- as.Date(subject$date)
 subject$interval <- as.factor(subject$interval)
 
+# 0=Sunday, 6=Saturday
+is.weekend <- function(wday) {
+    if (wday == 0 | wday == 6) {
+        TRUE
+    } else {
+        FALSE
+    }
+}
+
+subject$wknd <- sapply(subject$datetime$wday, is.weekend)
+
+
 #total number of steps per day
 total.steps.day <- tapply(subject$steps, subject$date, sum, na.rm = T)
 
@@ -24,7 +37,7 @@ avg.steps.interval <- tapply(subject$steps, subject$interval, mean, na.rm = T)
 
 
 ## What is mean total number of steps taken per day?
-```{r}
+```{r avg steps}
 par(mar = c(4, 4, 2, 0) + 0.1,
     cex = 0.8)
 
@@ -41,30 +54,149 @@ median(total.steps.day)
 
 
 ## What is the average daily activity pattern?
-```{r}
-plot(x = seq(from = 0, by = 5, length.out = 288),
-     y = avg.steps.interval,
+```{r pattern}
+df <- data.frame(time = seq(from = 0, by = 5, length.out = 288),
+                 avg.steps = avg.steps.interval)
+
+par(cex = 0.8)
+
+plot(df,
      type = 'l',
      main = 'Average Daily Acitivity Pattern over Two Months',
      xlab = 'Elapsed Time (minutes) per Day',
      ylab = 'Avg. Step per 5-minute Interval')
-
-peak.interval <- max(mean.steps.interval)
-names(avg.steps.interval[avg.steps.interval == peak.interval])
 ```
 
+_Note:_ coercing interval values 0, 5, 15, ... 1050, 1055, 1100, ... into
+numeric x-axis values produces a time-series plot of similar pattern but
+slightly different shape.  This student feels it is more accurate to
+plot x-values as a straight index of 1:288 or the minute-interval
+equivalents.
+
+
+```{r peak interval}
+#maximum steps from average daily interval
+max.steps <- max(df$avg.steps)
+max.steps
+
+#peak interval (elapsed time in minutes)
+peak.interval <- df$time[df$avg.steps == max.steps]
+peak.interval
+
+#peak hour
+peak.hour <- row.names(df)[df$avg.steps == max.steps]
+peak.hour
+```
 
 ## Imputing missing values
-```{r}
+```{r missing values}
 #number of missing value by date
-num.na.date <- tapply(subject$steps, subject$date, function(x) {length(which(is.na(x)))} )
+tapply(subject$steps,
+       subject$date,
+       function(x) sum(is.na(x)) )
 
-length(which(is.na(subject)))
-sum(num.na.date)
-
+#total number of missing values
+sum(is.na(subject$steps))
 ```
+
+Since the missing values are in daily groups of 288, they can be replaced using
+previously calculated avg.steps.interval _(length = 288)_.  It is also worth
+noting that the missing values are not always on weekends.
+
+```{r imputing missing}
+#new data set; prefix t = transformed
+t.subject <- subject
+t.subject$steps[(which(is.na(t.subject)))] <- avg.steps.interval
+#t.subject$steps[(which(is.na(t.subject)))] <- mean(total.steps.day) / 288
+
+#total number of steps per day
+t.total.steps.day <- tapply(t.subject$steps, t.subject$date, sum, na.rm = T)
+
+par(mar   = c(4, 4, 2, 0) + 0.1,
+    mfcol = c(1, 2),
+    cex   = 0.8)
+
+#after
+hist(t.total.steps.day, breaks = 10,
+     main = 'Adjusted (with interval mean)',
+     xlab = 'Steps per Day', ylab = 'No. of Day(s)',
+     labels = T,
+     col = 'grey90')
+
+#before
+hist(total.steps.day, breaks = 10,
+     main = 'Unadjusted',
+     xlab = 'Steps per Day', ylab = 'No. of Day(s)',
+     labels = T,
+     col = 'grey90')
+
+#unadjusted
+mean(total.steps.day)
+#adjusted
+mean(t.total.steps.day)
+
+#unadjusted
+median(total.steps.day)
+#adjusted
+median(t.total.steps.day)
+```
+
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+```{r wkd vs wknd}
+
+t.subject$wknd <- factor(t.subject$wknd,
+                         levels = c(T, F),
+                         labels = c('weekend', 'weekday'))
+
+df <- aggregate(t.subject$steps,
+                by = list(t.subject$interval, t.subject$wknd),
+                mean)
+
+colnames(df) <- c('interval', 'wkd', 'avg.steps')
+
+df$time <- seq(from = 0, by = 5, length.out = 288)
+
+library(lattice)
+xyplot(avg.steps ~ time | wkd, data = df,
+       type = 'l',
+       layout = c(1, 2),
+       par.strip.text = list(cex = c(0.8)),
+       scales = list(cex = c(0.8, 0.8)),
+       xlab   = list('Elapsed Time (minutes) per Day', cex = 0.8),
+       ylab   = list('Avg. Step per 5-minute Interval', cex = 0.8))
 ```
+
+***
+
+## Addendum
+
+### Comparison between the shapes of time-series line plot: time scale vs.
+coericing intervals into numerics
+
+```{r}
+par(cex = 0.8,
+    xaxt = 'n')
+
+plot(x = seq(from = 0, by = 5, length.out = 288),
+     y = avg.steps.interval,
+     type = 'l',
+     col  = 'red',
+     main = 'Average Daily Acitivity Pattern over Two Months',
+     xlab = 'Time',
+     ylab = 'Avg. Step per 5-minute Interval')
+
+lines(x = as.numeric(names(avg.steps.interval)) / 2400 * 1440,
+      y = avg.steps.interval,
+      col = 'blue')
+
+legend('topright',
+       legend = c('time-series', 'coericing'),
+       col = c('red', 'blue'),
+       lty = 1,
+       bty = 'n')
+```
+
+
+### Imputing missing value using average steps from each 5-minute interval vs.
