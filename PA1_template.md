@@ -170,8 +170,8 @@ noting that the missing values are not always on weekends.
 ```r
 #new data set; prefix t = transformed
 t.subject <- subject
-t.subject$steps[(which(is.na(t.subject)))] <- avg.steps.interval
-#t.subject$steps[(which(is.na(t.subject)))] <- mean(total.steps.day) / 288
+#t.subject$steps[(which(is.na(t.subject)))] <- avg.steps.interval
+t.subject$steps[(which(is.na(t.subject)))] <- mean(total.steps.day) / 288
 
 #total number of steps per day
 t.total.steps.day <- tapply(t.subject$steps, t.subject$date, sum, na.rm = T)
@@ -212,7 +212,7 @@ mean(t.total.steps.day)
 ```
 
 ```
-## [1] 10766.19
+## [1] 10581.01
 ```
 
 ```r
@@ -230,7 +230,7 @@ median(t.total.steps.day)
 ```
 
 ```
-## [1] 10766.19
+## [1] 10395
 ```
 
 
@@ -266,8 +266,8 @@ xyplot(avg.steps ~ time | wkd, data = df,
 
 ## Addendum
 
-### Comparison between the shapes of time-series line plot: time scale vs.
-coericing intervals into numerics
+### Comparison between the shapes of time-series line plot: time-values vs.
+coericing interval labels into numerics
 
 
 ```r
@@ -287,30 +287,95 @@ lines(x = as.numeric(names(avg.steps.interval)) / 2400 * 1440,
       col = 'blue')
 
 legend('topright',
-       legend = c('time-series', 'coericing'),
+       legend = c('time-value', 'coericing'),
        col = c('red', 'blue'),
        lty = 1,
        bty = 'n')
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 
+![](PA1_template_files/figure-html/interval-1.png) 
 
 
 ### Imputing missing value using average steps from each 5-minute interval vs.
 average daily total steps
 
 ```r
-mean(subject$steps, na.rm = T)
+m <- matrix(nrow = 2, ncol = 2,
+            data = c(mean(subject$steps, na.rm = T), 
+                     mean(total.steps.day) / 288,
+                     median(subject$step, na.rm = T),
+                     median(total.steps.day) / 288),
+            dimnames = list(c('(i) interval',
+                              '(d) daily average'),
+                            c('mean', 'median')))
+
+#3 different ways to imput NA
+print(m)
 ```
 
 ```
-## [1] 37.3826
+##                       mean   median
+## (i) interval      37.38260  0.00000
+## (d) daily average 32.47996 36.09375
 ```
 
 ```r
-mean(total.steps.day) / 288
+#daily average
+i.mean <- total.steps.day
+i.mean[i.mean == 0] <- m[1, 1] * 288
+
+d.mean <- total.steps.day
+d.mean[d.mean == 0] <- m[2, 1] * 288
+
+d.median <- total.steps.day
+d.median[d.median == 0] <- m[2, 2] * 288
+
+
+par(mfcol = c(1, 3))
+
+hist(i.mean, breaks = 10)
+hist(d.mean, breaks = 10)
+hist(d.median, breaks = 10)
 ```
 
+![](PA1_template_files/figure-html/imputing method comparison-1.png) 
+
+```r
+#average daily pattern
+i.mean <- avg.steps.interval
+i.mean[i.mean == 0] <- m[1, 1]
+
+d.mean <- avg.steps.interval
+d.mean[d.mean == 0] <- m[2, 1]
+
+d.median <- avg.steps.interval
+d.median[d.median == 0] <- m[2, 2]
+
+
+
+par(mfcol = c(1, 1),
+    mar = c(2, 2, 0, 0) + 0.1,
+    cex = 0.8)
+
+plot(x=seq(from = 0, by = 5, length.out = 288),
+     i.mean,
+     type = 'l')
+
+points(seq(from = 0, by = 5, length.out = 288),
+     d.mean,
+     type = 'l',
+     col = 'red')
+
+points(seq(from = 0, by = 5, length.out = 288),
+     d.median,
+     type = 'l',
+     col = 'blue')
+
+legend('topright', bty = 'n', lty = 1,
+       col = c('black', 'red', 'blue'),
+       legend = c('i.mean', 'd.mean', 'd.median'))
 ```
-## [1] 32.47996
-```
+
+![](PA1_template_files/figure-html/imputing method comparison-2.png) 
+
+No significant difference in the three methods.
