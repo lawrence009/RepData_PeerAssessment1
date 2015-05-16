@@ -182,7 +182,7 @@ par(mar   = c(4, 4, 2, 0) + 0.1,
 
 #after
 hist(t.total.steps.day, breaks = 10,
-     main = 'Adjusted (with interval mean)',
+     main = 'Adjusted (with daily mean)',
      xlab = 'Steps per Day', ylab = 'No. of Day(s)',
      labels = T,
      col = 'grey90')

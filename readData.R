@@ -15,6 +15,10 @@ total.steps.day <- tapply(subject$steps, subject$date, sum, na.rm = T)
 
 avg.steps.interval <- tapply(subject$steps, subject$interval, mean, na.rm = T)
 
+#same result as tapply above but in a data frame
+#aggregate(steps ~ interval, data = subject, mean)
+
+
 print(sum(is.na(subject$steps)))
 
 # 0=Sunday, 6=Saturday
