@@ -167,7 +167,7 @@ tapply(subject$steps,
 <pre class="r"><code>#total number of missing values
 sum(is.na(subject$steps))</code></pre>
 <pre><code>## [1] 2304</code></pre>
-<p>Since the missing values are in daily groups of 288, they can be replaced using previously calculated avg.steps.interval <em>(length = 288)</em>. It is also worth noting that the missing values are not always on weekends.</p>
+<p>Since the missing values are in daily groups of 288, they can be replaced using either previously calculated avg.steps.interval (5-min interval) or average total steps from the 61-day study. It is also worth noting that the missing values are not always on weekends.</p>
 <pre class="r"><code>#new data set; prefix t = transformed
 t.subject &lt;- subject
 #t.subject$steps[(which(is.na(t.subject)))] &lt;- avg.steps.interval
@@ -234,8 +234,8 @@ xyplot(avg.steps ~ time | wkd, data = df,
 </div>
 <div id="addendum" class="section level2">
 <h2>Addendum</h2>
-<div id="comparison-between-the-shapes-of-time-series-line-plot-time-values-vs.coericing-interval-labels-into-numerics" class="section level3">
-<h3>Comparison between the shapes of time-series line plot: time-values vs. coericing interval labels into numerics</h3>
+<div id="comparison-between-the-shapes-of-time-series-line-plot-time-values-vs.coercing-interval-labels-into-numeric" class="section level3">
+<h3>Comparison between the shapes of time-series line plot: time-values vs. coercing interval labels into numeric</h3>
 <pre class="r"><code>par(cex = 0.8,
     xaxt = 'n')
 

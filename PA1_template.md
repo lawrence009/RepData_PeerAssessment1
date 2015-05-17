@@ -163,8 +163,9 @@ sum(is.na(subject$steps))
 ```
 
 Since the missing values are in daily groups of 288, they can be replaced using
-previously calculated avg.steps.interval _(length = 288)_.  It is also worth
-noting that the missing values are not always on weekends.
+either previously calculated avg.steps.interval (5-min interval) or average
+total steps from the 61-day study.  It is also worth noting that the missing
+values are not always on weekends.
 
 
 ```r
@@ -267,7 +268,7 @@ xyplot(avg.steps ~ time | wkd, data = df,
 ## Addendum
 
 ### Comparison between the shapes of time-series line plot: time-values vs.
-coericing interval labels into numerics
+coercing interval labels into numeric
 
 
 ```r
